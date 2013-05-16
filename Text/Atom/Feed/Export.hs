@@ -20,7 +20,7 @@ import Data.List
 import Data.Maybe
 
 atom_prefix :: Maybe String
-atom_prefix = Nothing -- Just "atom"
+atom_prefix = Just "atom"
 
 atom_thr_prefix :: Maybe String
 atom_thr_prefix = Just "thr"
