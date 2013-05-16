@@ -21,7 +21,10 @@ import Text.Atom.Feed.Export (atomName, atomThreadName)
 import Text.XML.Light as XML
 
 pNodes       :: String -> [XML.Element] -> [XML.Element]
-pNodes x es   = filter ((atomName x ==) . elName) es
+pNodes x es   = filter ((go (atomName x)) . elName) es
+  where
+    go a@(QName _ _ _) b@(QName _ _ (Just _)) = a == b
+    go (QName name uri _) (QName oname ouri _) = name == oname && uri == ouri
 
 pQNodes      :: QName -> [XML.Element] -> [XML.Element]
 pQNodes x es  = filter ((x==) . elName) es
