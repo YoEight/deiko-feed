@@ -21,9 +21,15 @@ import Text.Atom.Feed.Export (atomName, atomThreadName)
 import Text.XML.Light as XML
 
 pNodes       :: String -> [XML.Element] -> [XML.Element]
-pNodes x es   = filter ((go (atomName x)) . elName) es
+pNodes x es   = filter ((relaxEq x) . elName) es
+
+relaxEq :: String -> (QName -> Bool)
+relaxEq x = go (atomName x)
   where
+    go (QName name _ (Just prefix)) (QName oname Nothing (Just oprefix)) =
+      name == oname && prefix == oprefix
     go a@(QName _ _ _) b@(QName _ _ (Just _)) = a == b
+    go (QName name _ _) (QName oname Nothing _) = name == oname
     go (QName name uri _) (QName oname ouri _) = name == oname && uri == ouri
 
 pQNodes      :: QName -> [XML.Element] -> [XML.Element]
@@ -61,7 +67,7 @@ children e    = onlyElems (elContent e)
 
 elementFeed  :: XML.Element -> Maybe Feed
 elementFeed e =
-  do guard (elName e == atomName "feed")
+  do guard (relaxEq "feed" (elName e))
      let es = children e
      i <- pLeaf "id" es
      t <- pTextContent "title" es `mplus` return (TextString "<no-title>")
